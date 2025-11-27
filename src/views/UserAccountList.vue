@@ -41,7 +41,7 @@
                     </div>
                 </div>
                 <button @click="openCreateModal" class="bg-primary hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md shadow-blue-500/20 flex items-center transition-all transform hover:scale-105 active:scale-95">
-                    <Plus class="w-4 h-4 mr-2" /><span class="font-medium text-sm">New Account</span>
+                    <Plus class="w-4 h-4 mr-2" /><span class="font-medium text-sm">New Device Account</span>
                 </button>
             </div>
         </div>
@@ -102,7 +102,7 @@
                 <!-- Modal Header -->
                 <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-start bg-slate-50/50">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800">{{ isEditing ? 'Update Account' : 'Create New Account' }}</h2>
+                        <h2 class="text-xl font-bold text-slate-800">{{ isEditing ? 'Update Device Account' : 'Create New Device Account' }}</h2>
                         <p class="text-sm text-slate-500 mt-1">Manage device login credentials</p>
                     </div>
                     <button @click="closeModal" class="text-slate-400 hover:text-slate-600 transition-colors">
@@ -211,7 +211,7 @@
                 <div class="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-2xl">
                     <button @click="closeModal" class="px-5 py-2.5 text-slate-600 hover:text-slate-800 hover:bg-slate-200/50 rounded-lg text-sm font-medium transition-colors">Cancel</button>
                     <button @click="saveAccount" class="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-500/20 text-sm font-medium transition-all transform active:scale-95 flex items-center">
-                        <Save class="w-4 h-4 mr-2" /> Save Account
+                        <Save class="w-4 h-4 mr-2" /> Save Device Account
                     </button>
                 </div>
             </div>

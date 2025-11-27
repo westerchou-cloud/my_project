@@ -53,7 +53,6 @@
                         <th class="px-6 py-4">Prefix Code</th>
                         <th class="px-6 py-4">Status</th>
                         <th class="px-6 py-4">Currency</th>
-                        <th class="px-6 py-4">Config Mode</th>
                         <th class="px-6 py-4">Created By / Time</th>
                         <th class="px-6 py-4">Updated By / Time</th>
                     </tr>
@@ -76,9 +75,6 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-slate-600">{{ agent.currency }}</td>
-                        <td class="px-6 py-4">
-                            <span :class="['text-xs font-medium px-2.5 py-0.5 rounded border', agent.configMode === 'CUSTOM' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-slate-50 text-slate-500 border-slate-200']">{{ agent.configMode }}</span>
-                        </td>
                         <td class="px-6 py-4 text-xs text-slate-500">
                             <div class="font-medium text-slate-700">{{ agent.createdBy }}</div><div>{{ agent.createdTime }}</div>
                         </td>

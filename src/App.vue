@@ -186,7 +186,7 @@ const menuItems = ref([
     {
         id: 2, name: 'User Management', icon: 'users', expanded: true, children: [
             { id: 21, name: 'Bank List', view: 'bank-list' },
-            { id: 22, name: 'User Account List', view: 'user-account-list' }
+            { id: 22, name: 'Device Account List', view: 'user-account-list' }
         ]
     },
     {
