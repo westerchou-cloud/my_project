@@ -206,7 +206,16 @@
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-sm font-medium text-slate-700">Password {{ isEditing ? '(leave blank to keep current)' : '' }} <span v-if="!isEditing" class="text-red-500">*</span></label>
-                            <input v-model="form.password" type="password" placeholder="Enter password" :class="['w-full bg-white border rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all', showErrors && !isEditing && !form.password ? 'border-red-300' : 'border-slate-200']">
+                            <input 
+                                v-model="form.password" 
+                                type="password" 
+                                placeholder="Enter password" 
+                                :class="['w-full bg-white border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none transition-all', 
+                                         validationErrors.password ? 'border-red-500 focus:ring-red-200' : 'border-slate-200 focus:ring-primary/20 focus:border-primary']"
+                                @input="validationErrors.password = validatePassword(form.password)"
+                            >
+                            <p v-if="validationErrors.password" class="text-xs text-red-600">{{ validationErrors.password }}</p>
+                            <p v-else class="text-xs text-slate-400">Must contain 1 uppercase, 1 lowercase, 1 number (6-50 chars)</p>
                         </div>
                     </div>
 
@@ -280,8 +289,21 @@ const form = reactive({
 const validationErrors = reactive({
     username: '',
     department: '',
-    realName: ''
+    realName: '',
+    password: ''
 });
+
+const validatePassword = (password) => {
+    if (!password) return ''; // Allow empty on edit (handled separately)
+    
+    if (password.length < 6) return 'Password must be at least 6 characters';
+    if (password.length > 50) return 'Password must not exceed 50 characters';
+    if (!/[A-Z]/.test(password)) return 'Password must contain at least 1 uppercase letter';
+    if (!/[a-z]/.test(password)) return 'Password must contain at least 1 lowercase letter';
+    if (!/[0-9]/.test(password)) return 'Password must contain at least 1 number';
+    
+    return '';
+};
 
 // Validation functions
 const validateLoginId = (value) => {
@@ -345,6 +367,13 @@ const filteredAccounts = computed(() => {
         }
         
         // Apply user filters
+        // Brand Filter Logic
+        let matchBrand = true;
+        if (props.isSuperAdmin && filters.brand !== 'ALL') {
+            const agent = props.globalState.agents.find(agent => agent.prefix === a.prefix);
+            matchBrand = agent && String(agent.brandId) === String(filters.brand);
+        }
+
         const matchPrefix = filters.prefix === 'ALL' || a.prefix === filters.prefix;
         const roleName = getRoleName(a.roleId);
         const matchRole = filters.role === 'ALL' || roleName === filters.role;
@@ -353,7 +382,7 @@ const filteredAccounts = computed(() => {
         const matchDept = !filters.department || (a.department && a.department.toLowerCase().includes(filters.department.toLowerCase()));
         const matchIp = !filters.loginIp || (a.lastLoginIp && a.lastLoginIp.includes(filters.loginIp));
 
-        return matchPrefix && matchRole && matchStatus && matchLoginId && matchDept && matchIp;
+        return matchBrand && matchPrefix && matchRole && matchStatus && matchLoginId && matchDept && matchIp;
     });
 });
 
@@ -467,12 +496,6 @@ const saveAccount = () => {
         return;
     }
     
-    // Validate password for new accounts
-    if (!isEditing.value && !form.password) {
-        alert('Password is required for new accounts.');
-        return;
-    }
-
     // Check for duplicate username in the same PREFIX (case-insensitive)
     const duplicate = props.globalState.accounts.find(a => {
         // When creating new account (form.id is null), check all accounts

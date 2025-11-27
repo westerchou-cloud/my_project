@@ -215,10 +215,14 @@ const form = reactive({
 });
 
 const PERMISSION_MODULES = [
-    { id: 'bank_account', name: 'Bank Account', actions: ['Create', 'Review', 'Update', 'Delete'] },
-    { id: 'transaction', name: 'Transaction', actions: ['Review', 'Export'] },
-    { id: 'report', name: 'Report', actions: ['View', 'Export'] },
-    { id: 'admin', name: 'Admin Management', actions: ['Create', 'Review', 'Update', 'Delete'] }
+    { id: 'prefix', name: 'Prefix List', actions: ['Create', 'Review', 'Update', 'Delete'] },
+    { id: 'admin_role', name: 'Admin Role List', actions: ['Create', 'Review', 'Update', 'Delete'] },
+    { id: 'admin_account', name: 'Admin Account List', actions: ['Create', 'Review', 'Update', 'Delete'] },
+    { id: 'bank', name: 'Bank List', actions: ['Create', 'Review', 'Update', 'Delete'] },
+    { id: 'device_account', name: 'Device Account List', actions: ['Create', 'Review', 'Update', 'Delete'] },
+    { id: 'transaction', name: 'Transaction Records', actions: ['Review', 'Export'] },
+    { id: 'deposit', name: 'Deposit List', actions: ['Review', 'Update', 'Export'] },
+    { id: 'configuration', name: 'Configuration', actions: ['Review', 'Update'] }
 ];
 
 const permissionModules = PERMISSION_MODULES;
@@ -350,6 +354,24 @@ const toggleAllModule = (module) => {
 const saveRole = () => {
     if (!form.brandId || !form.prefix || !form.name) {
         alert('Please fill in required fields (Brand, Prefix, and Role Name).');
+        return;
+    }
+
+    // Check for duplicate role name in same prefix
+    const duplicate = props.globalState.roles.find(r => 
+        r.prefix === form.prefix && 
+        r.name.toLowerCase() === form.name.toLowerCase() && 
+        r.id !== form.id
+    );
+
+    if (duplicate) {
+        alert(`Role name "${form.name}" already exists in prefix ${form.prefix}`);
+        return;
+    }
+
+    // Check at least one permission is selected
+    if (!form.permissions || form.permissions.length === 0) {
+        alert('Please select at least one permission');
         return;
     }
 
