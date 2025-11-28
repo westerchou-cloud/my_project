@@ -186,13 +186,7 @@
                         </tr>
                     </tbody>
                     <!-- Footer -->
-                    <tfoot class="bg-green-50 border-t border-green-100">
-                        <tr>
-                            <td :colspan="isSuperAdmin ? 9 : 7" class="px-6 py-4 text-right font-bold text-green-800">Total Amount:</td>
-                            <td class="px-6 py-4 text-right font-bold text-green-600">{{ formatNumber(totalAmount) }}</td>
-                            <td :colspan="4"></td>
-                        </tr>
-                    </tfoot>
+
                 </table>
             </div>
             <!-- Pagination -->
@@ -309,10 +303,7 @@ const paginatedOrders = computed(() => {
     return filteredOrders.value.slice(start, end);
 });
 
-// Total Amount Calculation
-const totalAmount = computed(() => {
-    return filteredOrders.value.reduce((sum, o) => sum + o.amount, 0);
-});
+
 
 // Number Formatter
 const formatNumber = (num) => {

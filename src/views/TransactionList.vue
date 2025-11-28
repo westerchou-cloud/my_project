@@ -166,13 +166,7 @@
                         </tr>
                     </tbody>
                     <!-- Footer -->
-                    <tfoot class="bg-green-50 border-t border-green-100">
-                        <tr>
-                            <td :colspan="isSuperAdmin ? 8 : 6" class="px-6 py-4 text-right font-bold text-green-800">Total Deposit:</td>
-                            <td class="px-6 py-4 text-right font-bold text-green-600">{{ formatNumber(totalDeposit) }}</td>
-                            <td :colspan="4"></td>
-                        </tr>
-                    </tfoot>
+
                 </table>
             </div>
             <!-- Pagination -->
@@ -287,12 +281,7 @@ const paginatedTransactions = computed(() => {
     return filteredTransactions.value.slice(start, end);
 });
 
-// Total Deposit Calculation
-const totalDeposit = computed(() => {
-    return filteredTransactions.value
-        .filter(t => t.type === 'DEPOSIT')
-        .reduce((sum, t) => sum + t.amount, 0);
-});
+
 
 // Number Formatter
 const formatNumber = (num) => {
