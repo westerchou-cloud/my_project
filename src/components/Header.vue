@@ -18,12 +18,12 @@
                 </button>
                 <!-- Dropdown Menu -->
                 <div v-if="showDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
-                    <button @click="navigateToSettings" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center transition-colors">
+                    <button @click.stop="navigateToSettings" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center transition-colors">
                         <Settings class="w-4 h-4 mr-2" />
                         Account Settings
                     </button>
                     <hr class="my-1 border-slate-200">
-                    <button @click="handleLogout" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center transition-colors">
+                    <button @click.stop="handleLogout" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center transition-colors">
                         <LogOut class="w-4 h-4 mr-2" />
                         Logout
                     </button>
@@ -66,10 +66,13 @@ const handleLogout = () => {
 
 // Close dropdown when clicking outside
 if (typeof window !== 'undefined') {
-    window.addEventListener('click', (e) => {
-        if (!e.target.closest('.relative')) {
+    const handleClickOutside = (e) => {
+        const dropdown = e.target.closest('.relative');
+        if (!dropdown && showDropdown.value) {
             showDropdown.value = false;
         }
-    });
+    };
+    
+    window.addEventListener('click', handleClickOutside);
 }
 </script>

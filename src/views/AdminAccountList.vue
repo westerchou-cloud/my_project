@@ -4,14 +4,7 @@
         <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="flex items-center gap-4 flex-1 flex-wrap">
-                    <!-- Brand Filter (SUPERADMIN only) -->
-                    <div v-if="isSuperAdmin" class="relative">
-                        <select v-model="filters.brand" class="appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-2 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium">
-                            <option value="ALL">Brand: All</option>
-                            <option v-for="brand in globalState.brands" :key="brand.id" :value="brand.id">{{ brand.name }}</option>
-                        </select>
-                        <ChevronDown class="absolute right-3 top-2.5 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
+
                     <!-- Prefix Filter (SUPERADMIN only) -->
                     <div v-if="isSuperAdmin" class="relative">
                         <select v-model="filters.prefix" class="appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-2 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium">
@@ -135,41 +128,25 @@
                 <div class="p-8 space-y-6">
                     <!-- Prefix & Role & Status -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Brand Selection (Super Admin) -->
-                        <div v-if="isSuperAdmin" class="space-y-1.5">
-                            <label class="block text-sm font-medium text-slate-700">Brand <span class="text-red-500">*</span></label>
-                            <div class="relative">
-                                <select v-model="form.brandId" :disabled="isEditing" :class="['w-full bg-white border rounded-lg px-4 py-2.5 text-sm appearance-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all disabled:bg-slate-50 disabled:text-slate-500', showErrors && !form.brandId ? 'border-red-300' : 'border-slate-200']">
-                                    <option value="" disabled>Select Brand</option>
-                                    <option v-for="brand in globalState.brands" :key="brand.id" :value="brand.id">{{ brand.name }}</option>
-                                </select>
-                                <ChevronDown class="absolute right-3 top-3 w-4 h-4 text-slate-400 pointer-events-none" />
-                            </div>
-                        </div>
+
 
                         <!-- Prefix Selection (Super Admin) -->
                         <div v-if="isSuperAdmin" class="space-y-1.5">
                             <label class="block text-sm font-medium text-slate-700">Prefix <span class="text-red-500">*</span></label>
                             <div class="relative">
-                                <select v-model="form.prefix" :disabled="isEditing" :class="['w-full bg-white border rounded-lg px-4 py-2.5 text-sm appearance-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all disabled:bg-slate-50 disabled:text-slate-500', showErrors && !form.prefix ? 'border-red-300' : 'border-slate-200']">
+                                <select v-model="form.prefix" :disabled="isEditing" :class="['w-full bg-white border rounded-lg px-4 py-2.5 text-sm appearance-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all', showErrors && !form.prefix ? 'border-red-300' : 'border-slate-200']">
                                     <option value="" disabled>Select Prefix</option>
-                                    <option v-for="agent in filteredPrefixesForForm" :key="agent.prefix" :value="agent.prefix">{{ agent.prefix }}</option>
+                                    <option v-for="agent in globalState.agents" :key="agent.prefix" :value="agent.prefix">{{ agent.prefix }}</option>
                                 </select>
                                 <ChevronDown class="absolute right-3 top-3 w-4 h-4 text-slate-400 pointer-events-none" />
                             </div>
                         </div>
 
-                        <!-- Brand & Prefix Display (Prefix Admin) -->
-                        <template v-else>
-                            <div class="space-y-1.5">
-                                <label class="block text-sm font-medium text-slate-700">Brand</label>
-                                <input type="text" :value="userBrandName" disabled class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed">
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="block text-sm font-medium text-slate-700">Prefix</label>
-                                <input type="text" :value="userPrefix" disabled class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed">
-                            </div>
-                        </template>
+                        <!-- Prefix Display (Prefix Admin) -->
+                        <div v-else class="space-y-1.5">
+                            <label class="block text-sm font-medium text-slate-700">Prefix</label>
+                            <input type="text" :value="userPrefix" disabled class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed">
+                        </div>
                         <div class="space-y-1.5" :class="{ 'md:col-span-2': !isSuperAdmin }">
                             <div class="flex items-center justify-between">
                                 <label class="block text-sm font-medium text-slate-700">Role <span class="text-red-500">*</span></label>
@@ -267,7 +244,7 @@ import Pagination from '../components/Pagination.vue';
 
 const props = defineProps(['globalState', 'isSuperAdmin', 'userPrefix']);
 
-const filters = reactive({ brand: 'ALL', prefix: 'ALL', role: 'ALL', status: 'ALL', loginId: '', department: '', loginIp: '' });
+const filters = reactive({ prefix: 'ALL', role: 'ALL', status: 'ALL', loginId: '', department: '', loginIp: '' });
 const showModal = ref(false);
 const isEditing = ref(false);
 const showErrors = ref(false);
@@ -275,7 +252,6 @@ const currentPage = ref(1);
 
 const form = reactive({
     id: null,
-    brandId: '',
     prefix: '',
     username: '',
     password: '',
@@ -320,44 +296,7 @@ const validateName = (value, fieldName) => {
     return '';
 };
 
-// Cascading Filter: Filter Prefixes based on selected Brand
-const filteredPrefixes = computed(() => {
-    if (filters.brand === 'ALL') {
-        return props.globalState.agents;
-    }
-    return props.globalState.agents.filter(agent => String(agent.brandId) === String(filters.brand));
-});
 
-// Reset Prefix when Brand changes
-watch(() => filters.brand, () => {
-    filters.prefix = 'ALL';
-});
-
-// Cascading Filter for Form: Filter Prefixes based on selected Brand in form
-const filteredPrefixesForForm = computed(() => {
-    if (!props.isSuperAdmin) {
-        // Prefix Admin: only show their own prefix
-        return props.globalState.agents.filter(a => a.prefix === props.userPrefix);
-    }
-    if (!form.brandId) {
-        return props.globalState.agents;
-    }
-    return props.globalState.agents.filter(agent => String(agent.brandId) === String(form.brandId));
-});
-
-// Reset Prefix in form when Brand changes
-watch(() => form.brandId, () => {
-    form.prefix = '';
-});
-
-// Computed property for Prefix Admin's Brand name
-const userBrandName = computed(() => {
-    if (props.isSuperAdmin) return '';
-    const userAgent = props.globalState.agents.find(a => a.prefix === props.userPrefix);
-    if (!userAgent) return '';
-    const brand = props.globalState.brands.find(b => String(b.id) === String(userAgent.brandId));
-    return brand ? brand.name : '';
-});
 
 const filteredAccounts = computed(() => {
     return props.globalState.accounts.filter(a => {
@@ -366,23 +305,15 @@ const filteredAccounts = computed(() => {
             return false;
         }
         
-        // Apply user filters
-        // Brand Filter Logic
-        let matchBrand = true;
-        if (props.isSuperAdmin && filters.brand !== 'ALL') {
-            const agent = props.globalState.agents.find(agent => agent.prefix === a.prefix);
-            matchBrand = agent && String(agent.brandId) === String(filters.brand);
-        }
-
+        // Apply filters
         const matchPrefix = filters.prefix === 'ALL' || a.prefix === filters.prefix;
-        const roleName = getRoleName(a.roleId);
-        const matchRole = filters.role === 'ALL' || roleName === filters.role;
+        const matchRole = filters.role === 'ALL' || getRoleName(a.roleId) === filters.role;
         const matchStatus = filters.status === 'ALL' || a.status === filters.status;
         const matchLoginId = !filters.loginId || a.username.toLowerCase().includes(filters.loginId.toLowerCase());
-        const matchDept = !filters.department || (a.department && a.department.toLowerCase().includes(filters.department.toLowerCase()));
-        const matchIp = !filters.loginIp || (a.lastLoginIp && a.lastLoginIp.includes(filters.loginIp));
-
-        return matchBrand && matchPrefix && matchRole && matchStatus && matchLoginId && matchDept && matchIp;
+        const matchDept = !filters.department || a.department.toLowerCase().includes(filters.department.toLowerCase());
+        const matchIp = !filters.lastLoginIp || a.lastLoginIp.includes(filters.lastLoginIp);
+        
+        return matchPrefix && matchRole && matchStatus && matchLoginId && matchDept && matchIp;
     });
 });
 
@@ -405,7 +336,6 @@ const openCreateModal = () => {
     isEditing.value = false;
     showErrors.value = false;
     form.id = null;
-    form.brandId = '';
     form.prefix = props.isSuperAdmin ? '' : props.userPrefix;
     form.username = '';
     form.password = '';
@@ -414,13 +344,7 @@ const openCreateModal = () => {
     form.department = '';
     form.realName = '';
     
-    // For Prefix Admin, auto-fill brandId
-    if (!props.isSuperAdmin) {
-        const userAgent = props.globalState.agents.find(a => a.prefix === props.userPrefix);
-        if (userAgent) {
-            form.brandId = userAgent.brandId;
-        }
-    }
+
     
     showModal.value = true;
 };
@@ -438,11 +362,7 @@ const openEditModal = (account) => {
     form.department = account.department;
     form.realName = account.realName;
     
-    // Set brandId from the account's prefix
-    const accountAgent = props.globalState.agents.find(a => a.prefix === account.prefix);
-    if (accountAgent) {
-        form.brandId = accountAgent.brandId;
-    }
+
     
     showModal.value = true;
 };
@@ -456,11 +376,7 @@ const saveAccount = () => {
     validationErrors.realName = '';
     showErrors.value = true;
     
-    // Validate required fields
-    if (!form.brandId) {
-        alert('Please select a brand.');
-        return;
-    }
+
 
     if (!form.prefix) {
         alert('Please select a prefix.');

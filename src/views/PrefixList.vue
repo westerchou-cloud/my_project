@@ -4,14 +4,7 @@
         <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="flex items-center gap-4 flex-1">
-                    <!-- Brand Filter -->
-                    <div class="relative">
-                        <select v-model="filters.brand" class="appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-2 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium">
-                            <option value="ALL">Brand: All</option>
-                            <option v-for="brand in globalState.brands" :key="brand.id" :value="brand.id">{{ brand.name }}</option>
-                        </select>
-                        <ChevronDown class="absolute right-3 top-2.5 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
+
                     <!-- Status Filter -->
                     <div class="relative">
                         <select v-model="filters.status" class="appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-2 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium">
@@ -49,7 +42,7 @@
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500 font-semibold tracking-wider">
                         <th class="px-6 py-4">Action</th>
-                        <th class="px-6 py-4">Brand</th>
+
                         <th class="px-6 py-4">Prefix Code</th>
                         <th class="px-6 py-4">Status</th>
                         <th class="px-6 py-4">Currency</th>
@@ -62,11 +55,7 @@
                         <td class="px-6 py-4">
                             <button @click="openEditModal(agent)" class="text-primary hover:text-blue-700 font-medium text-sm flex items-center"><Edit2 class="w-4 h-4 mr-1" /> EDIT</button>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded border bg-slate-50 text-slate-600 border-slate-200 text-xs font-medium">
-                                {{ globalState.brands.find(b => b.id === agent.brandId)?.name || '-' }}
-                            </span>
-                        </td>
+
                         <td class="px-6 py-4 font-medium text-slate-700">{{ agent.prefix }}</td>
                         <td class="px-6 py-4">
                             <span :class="['inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold', agent.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500']">
@@ -115,18 +104,7 @@
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Brand -->
-                            <div class="space-y-1.5">
-                                <label class="block text-sm font-medium text-slate-700">Brand <span class="text-red-500">*</span></label>
-                                <div class="relative">
-                                    <select v-model="form.brandId" :disabled="isEditing" 
-                                        class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-sm appearance-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all disabled:bg-slate-50 disabled:text-slate-500">
-                                        <option value="" disabled>Select Brand</option>
-                                        <option v-for="brand in globalState.brands" :key="brand.id" :value="brand.id">{{ brand.name }}</option>
-                                    </select>
-                                    <ChevronDown class="absolute right-3 top-3 w-4 h-4 text-slate-400 pointer-events-none" />
-                                </div>
-                            </div>
+
 
                             <!-- Prefix Code -->
                             <div class="space-y-1.5">
@@ -262,7 +240,7 @@ import Pagination from '../components/Pagination.vue';
 
 const props = defineProps(['globalState']);
 
-const filters = reactive({ brand: 'ALL', status: 'ALL', currency: 'ALL', search: '' });
+const filters = reactive({ status: 'ALL', currency: 'ALL', search: '' });
 const showModal = ref(false);
 const isEditing = ref(false);
 const showSecret = ref(false);
@@ -271,7 +249,6 @@ const currentPage = ref(1);
 
 const form = reactive({
     id: null,
-    brandId: '',
     prefix: '',
     currency: '',
     isActive: true,
@@ -305,12 +282,12 @@ const availableBanksWithStatus = computed(() => {
 });
 
 const filteredAgents = computed(() => {
-    return props.globalState.agents.filter(a =>
-        (filters.brand === 'ALL' || String(a.brandId) === String(filters.brand)) &&
-        (filters.status === 'ALL' || a.status === filters.status) &&
-        (filters.currency === 'ALL' || a.currency === filters.currency) &&
-        a.prefix.toLowerCase().includes(filters.search.toLowerCase())
-    ).map(agent => ({
+    return props.globalState.agents.filter(agent => {
+        const matchStatus = filters.status === 'ALL' || agent.status === filters.status;
+        const matchCurrency = filters.currency === 'ALL' || agent.currency === filters.currency;
+        const matchSearch = !filters.search || agent.prefix.toLowerCase().includes(filters.search.toLowerCase());
+        return matchStatus && matchCurrency && matchSearch;
+    }).map(agent => ({
         ...agent,
         configMode: getConfigMode(agent.prefix)
     }));
@@ -338,7 +315,6 @@ const generateSecret = () => 'sk_live_' + Math.random().toString(36).substr(2, 1
 const openCreateModal = () => {
     isEditing.value = false;
     form.id = null;
-    form.brandId = '';
     form.prefix = '';
     form.currency = '';
     form.isActive = true;
@@ -382,7 +358,7 @@ const saveAgent = () => {
     }
 
     // Validation
-    if (!form.brandId || !form.prefix || !form.currency) {
+    if (!form.prefix || !form.currency) {
         alert('Please fill in the required fields.');
         return;
     }

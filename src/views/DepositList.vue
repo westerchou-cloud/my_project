@@ -4,32 +4,7 @@
         <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
             <div class="flex flex-col gap-4">
                 
-                <!-- Row 1: Brand & Prefix Filter (SUPERADMIN only) -->
-                <div v-if="isSuperAdmin" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Brand Filter -->
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">Brand</label>
-                        <div class="relative">
-                            <select v-model="filters.brand" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-2 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium">
-                                <option value="ALL">ALL</option>
-                                <option v-for="brand in globalState.brands" :key="brand.id" :value="brand.id">{{ brand.name }}</option>
-                            </select>
-                            <ChevronDown class="absolute right-3 top-2.5 w-4 h-4 text-slate-400 pointer-events-none" />
-                        </div>
-                    </div>
 
-                    <!-- Prefix Filter -->
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">Prefix</label>
-                        <div class="relative">
-                            <select v-model="filters.prefix" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-2 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium">
-                                <option value="ALL">ALL</option>
-                                <option v-for="agent in filteredPrefixes" :key="agent.prefix" :value="agent.prefix">{{ agent.prefix }}</option>
-                            </select>
-                            <ChevronDown class="absolute right-3 top-2.5 w-4 h-4 text-slate-400 pointer-events-none" />
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Row 2: Dates & Dropdowns -->
                 <div :class="['grid grid-cols-1 md:grid-cols-2 gap-4', isSuperAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-4']">
@@ -213,7 +188,6 @@ const sevenDaysAgo = new Date(today);
 sevenDaysAgo.setDate(today.getDate() - 7);
 
 const filters = reactive({
-    brand: 'ALL',
     prefix: 'ALL',
     startDate: formatDate(sevenDaysAgo),
     endDate: formatDate(today),
@@ -239,18 +213,7 @@ const uniqueBankCodes = computed(() => {
     }
 });
 
-// Cascading Filter: Filter Prefixes based on selected Brand
-const filteredPrefixes = computed(() => {
-    if (filters.brand === 'ALL') {
-        return props.globalState.agents;
-    }
-    return props.globalState.agents.filter(agent => String(agent.brandId) === String(filters.brand));
-});
 
-// Reset Prefix when Brand changes
-watch(() => filters.brand, () => {
-    filters.prefix = 'ALL';
-});
 
 // Date Validation
 const isDateRangeInvalid = computed(() => filters.startDate > filters.endDate);
@@ -274,12 +237,7 @@ const filteredOrders = computed(() => {
         const orderDate = o.orderTime.split(' ')[0];
         const matchDate = orderDate >= filters.startDate && orderDate <= filters.endDate;
         
-        // Brand Filter Logic
-        let matchBrand = true;
-        if (props.isSuperAdmin && filters.brand !== 'ALL') {
-            const agent = props.globalState.agents.find(a => a.prefix === o.prefix);
-            matchBrand = agent && String(agent.brandId) === String(filters.brand);
-        }
+
 
         const matchPrefix = filters.prefix === 'ALL' || o.prefix === filters.prefix;
         const matchCurrency = filters.currency === 'ALL' || o.currency === filters.currency;
@@ -292,7 +250,10 @@ const filteredOrders = computed(() => {
         const matchName = !filters.accountName || o.accountName.toLowerCase().includes(filters.accountName.toLowerCase());
         const matchMember = !filters.memberAccount || o.memberAccount.toLowerCase().includes(filters.memberAccount.toLowerCase());
 
-        return matchDate && matchBrand && matchPrefix && matchCurrency && matchBank && matchStatus && matchOrderNo && matchAccount && matchCounter && matchName && matchMember;
+        return matchDate && matchPrefix && matchCurrency && matchBank && matchStatus && matchOrderNo && matchAccount && matchCounter && matchName && matchMember;
+    }).sort((a, b) => {
+        // Sort by orderTime descending (newest first)
+        return new Date(b.orderTime) - new Date(a.orderTime);
     });
 });
 
